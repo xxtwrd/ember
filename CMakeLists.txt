@@ -10,6 +10,5 @@ else()
     add_compile_options(-Wall -Wextra -Werror)
 endif()
 
-add_executable(ember src/main.cpp src/memory.cpp src/dump.cpp)
+add_executable(ember src/main.cpp src/memory.cpp src/dump.cpp "src/alu.cpp" "src/cpu.cpp")
 target_include_directories(ember PRIVATE src)
-

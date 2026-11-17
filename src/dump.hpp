@@ -4,4 +4,3 @@
 void show_byte(Byte val);
 void mem_dump(const Memory& mem);
 #endif
-
