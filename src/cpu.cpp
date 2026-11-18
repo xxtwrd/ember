@@ -5,6 +5,7 @@
 
 void dump_regs(const CPU& cpu) {
     std::cout << "PC=" << std::hex << std::setw(4) << std::setfill('0') << cpu.pc << std::dec << std::setfill(' ')
+        << "  H=" << std::hex << std::setw(4) << std::setfill('0') << cpu.h << std::dec << std::setfill(' ')
         << "  A=" << static_cast<int>(cpu.a)
         << "  B=" << static_cast<int>(cpu.b)
         << "  Z=" << (cpu.f.z ? 1 : 0)
@@ -14,6 +15,11 @@ void dump_regs(const CPU& cpu) {
         << std::endl;
 }
 
+void run(CPU& cpu) {
+    while (!cpu.halted) {
+        step(cpu);
+    }
+}
 void step(CPU& cpu) {
     if (cpu.halted) {
         std::cout << "halted\n";
@@ -33,6 +39,14 @@ void step(CPU& cpu) {
         cpu.pc += 1;
         break;
     case OP_NOP:
+        cpu.pc += 1;
+        break;
+    case OP_OUT:
+        std::cout << static_cast<char>(cpu.a);
+        cpu.pc += 1;
+        break;
+    case OP_OUTN:
+        std::cout << static_cast<int>(cpu.a);
         cpu.pc += 1;
         break;
     case OP_ADD:
@@ -73,6 +87,43 @@ void step(CPU& cpu) {
         break;
     case OP_DEC:
         cpu.a = alu_dec(cpu.a, cpu.f);
+        cpu.pc += 1;
+        break;
+    case OP_LOADI: {
+        Byte imm = 0;
+        if (!mem_get(*cpu.mem, cpu.pc + 1, imm)) {
+            std::cout << "Error: LOADI out of bounds\n";
+            cpu.halted = true;
+            return;
+        }
+        cpu.a = imm;
+        cpu.pc += 2;
+        break;
+    }
+
+    case OP_LOADH: {
+        Byte lo = 0, hi = 0;
+        mem_get(*cpu.mem, cpu.pc + 1, lo);
+        mem_get(*cpu.mem, cpu.pc + 2, hi);
+        cpu.h = static_cast<uint16_t>(lo | (hi << 8));
+        cpu.pc += 3;
+        break;
+    }
+
+    case OP_LOAD_H: {
+        Byte val = 0;
+        if (!mem_get(*cpu.mem, cpu.h, val)) {
+            std::cout << "Error: LOAD [H] out of bounds at address 0x" << std::hex << cpu.h << std::dec << "\n";
+            cpu.halted = true;
+            return;
+        }
+        cpu.a = val;
+        cpu.pc += 1;
+        break;
+    }
+
+    case OP_INCH:
+        cpu.h++;
         cpu.pc += 1;
         break;
     default:

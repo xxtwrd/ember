@@ -92,9 +92,29 @@ int main() {
                 }
             }
         }
+        else if (cmd == "regh") {
+            std::string v;
+            if (!(ss >> v)) {
+                std::cout << "Usage: regh <value>" << std::endl;
+            }
+            else {
+                try {
+                    unsigned long value = std::stoul(v, nullptr, 0);
+                    cpu.h = static_cast<uint16_t>(value);
+                    std::cout << "OK" << std::endl;
+                }
+                catch (...) {
+                    std::cout << "Error parsing value" << std::endl;
+                }
+            }
+        }
         else if (cmd == "step") {
             step(cpu);
             std::cout << "OK" << std::endl;
+        }
+        else if (cmd == "run") {
+            run(cpu);
+            std::cout << "OK (Execution finished)" << std::endl;
         }
         else if (cmd == "regs") {
             dump_regs(cpu);
@@ -107,7 +127,9 @@ int main() {
             std::cout << "  dump             - Dump memory contents" << std::endl;
             std::cout << "  regs             - Show CPU registers and flags" << std::endl;
             std::cout << "  reg <a|b> <val>  - Set register A or B" << std::endl;
+            std::cout << "  regh <val>       - Set address register H" << std::endl;
             std::cout << "  step             - Execute one instruction" << std::endl;
+            std::cout << "  run              - Run until HALT" << std::endl;
             std::cout << "  quit             - Exit program" << std::endl;
         }
         else if (!cmd.empty()) {
